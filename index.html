@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FloraPedia — O'simliklar Ensiklopediyasi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Ikonkalar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans & Lora -->
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        serif: ['Lora', 'serif'],
+                    },
+                    colors: {
+                        forest: {
+                            800: '#1b4332',
+                            900: '#081c15',
+                        },
+                        sage: {
+                            50: '#f4f7f5',
+                            100: '#e3ece6',
+                            200: '#c5d8cc',
+                            500: '#52796f',
+                            600: '#354f52',
+                        },
+                        cream: '#faf9f6'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-cream text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Yuqori Navigatsiya va Til Tanlash Paneli -->
+    <header class="bg-forest-900 text-white sticky top-0 z-40 shadow-lg border-b border-forest-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-between items-center py-3.5 gap-3">
+                <!-- Logotip -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="resetFilters()">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300 shadow-inner">
+                        <i class="fa-solid fa-seedling text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-serif font-bold text-xl tracking-wide text-white">Flora<span class="text-emerald-400">Pedia</span></h1>
+                        <p id="ui-subtitle" class="text-[11px] text-sage-200 tracking-wider uppercase">Tabiat Ensiklopediyasi</p>
+                    </div>
+                </div>
+
+                <!-- O'ng taraf: Sevimlilar va 3 tilli almashtirgich -->
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                    <!-- Sevimlilar tugmasi -->
+                    <button onclick="toggleFavoritesFilter()" id="btn-favorites" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-forest-800 hover:bg-emerald-900/60 border border-emerald-700/40 text-sm font-medium transition">
+                        <i id="fav-header-icon" class="fa-regular fa-heart text-rose-400"></i>
+                        <span id="ui-favorites-btn" class="hidden sm:inline">Sevimlilar</span>
+                        <span id="fav-count" class="bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                    </button>
+
+                    <!-- 3 Tilli Almashtirgich (UZ / RU / EN) -->
+                    <div class="flex bg-forest-800 p-1 rounded-xl border border-emerald-800/60" role="group" aria-label="Language Switcher">
+                        <button onclick="changeLanguage('uz')" id="lang-uz" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-forest-900 shadow-sm">
+                            🇺🇿 O'ZB
+                        </button>
+                        <button onclick="changeLanguage('ru')" id="lang-ru" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition text-sage-200 hover:text-white">
+                            🇷🇺 РУС
+                        </button>
+                        <button onclick="changeLanguage('en')" id="lang-en" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition text-sage-200 hover:text-white">
+                            🇬🇧 ENG
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero (Kirish) Qismi va Qidiruv -->
+    <section class="bg-gradient-to-b from-forest-900 via-forest-800 to-sage-600 text-white py-10 sm:py-14 px-4">
+        <div class="max-w-4xl mx-auto text-center space-y-4">
+            <span id="ui-badge" class="inline-block px-3.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-semibold tracking-wide">
+                🌿 18 xil noyob va foydali o'simliklar bazasi
+            </span>
+            <h2 id="ui-hero-title" class="font-serif text-3xl sm:text-5xl font-bold leading-tight">
+                Tabiat mo'jizalari va o'simliklar dunyosini kashf eting
+            </h2>
+            <p id="ui-hero-desc" class="text-sage-100 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+                Har bir o'simlikning qancha yil umr ko'rishi, to'g'ri parvarish qilish sirlari hamda inson salomatligi va tabiat uchun foydalari haqida 3 tilda batafsil ma'lumot oling.
+            </p>
+
+            <!-- Qidiruv maydoni -->
+            <div class="pt-4 max-w-xl mx-auto">
+                <div class="relative flex items-center">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 text-sage-500 text-lg"></i>
+                    <input type="text" id="search-input" placeholder="O'simlik nomi, foydasi yoki xususiyati bo'yicha izlang..." class="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-white text-slate-900 placeholder-slate-400 shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-400/40 text-sm sm:text-base transition">
+                    <button id="clear-search" onclick="clearSearch()" class="hidden absolute right-4 text-slate-400 hover:text-slate-700">
+                        <i class="fa-solid fa-circle-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Asosiy Kontent -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- Kategoriyalar Filtri -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-sage-200 pb-4">
+            <div id="category-tabs" class="flex flex-wrap gap-2">
+                <!-- JS orqali dinamik yaratiladi -->
+            </div>
+            <div class="text-xs sm:text-sm font-medium text-sage-600 whitespace-nowrap">
+                <span id="ui-showing-text">Ko'rsatilmoqda:</span> 
+                <span id="results-count" class="font-bold text-forest-800">18</span>
+            </div>
+        </div>
+
+        <!-- O'simliklar Kartochkalari To'ri (Grid) -->
+        <section id="plants-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+            <!-- JS orqali dinamik yaratiladi -->
+        </section>
+
+        <!-- Hech narsa topilmaganda (Empty State) -->
+        <div id="empty-state" class="hidden py-16 text-center bg-white rounded-3xl border border-sage-200/80 shadow-sm">
+            <div class="w-20 h-20 bg-sage-100 text-sage-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-leaf text-3xl"></i>
+            </div>
+            <h3 id="ui-empty-title" class="font-serif text-xl font-bold text-slate-800">O'simlik topilmadi</h3>
+            <p id="ui-empty-desc" class="text-sm text-slate-500 mt-2 max-w-md mx-auto">Qidiruv so'zini o'zgartirib ko'ring yoki barcha kategoriyalarni tanlang.</p>
+            <button onclick="resetFilters()" id="ui-reset-btn" class="mt-5 px-5 py-2.5 bg-forest-800 hover:bg-forest-900 text-white text-sm font-semibold rounded-xl transition shadow-sm">
+                Barcha o'simliklarni ko'rsatish
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Batafsil Ma'lumot Modal Oynasi -->
+    <div id="plant-modal" class="fixed inset-0 bg-forest-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl border border-sage-200 my-auto transform transition-all">
+            <!-- Modal Header (Rangli botanik fon va SVG/Emoji) -->
+            <div id="modal-banner" class="relative p-6 sm:p-8 text-white flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 bg-gradient-to-r from-forest-900 to-forest-800">
+                <button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/25 hover:bg-black/40 text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+
+                <div class="flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-5">
+                    <div id="modal-icon-box" class="w-24 h-24 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-5xl shadow-lg shrink-0">
+                        🌳
+                    </div>
+                    <div>
+                        <span id="modal-category" class="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-semibold tracking-wide mb-2">
+                            Kategoriya
+                        </span>
+                        <h2 id="modal-name" class="font-serif text-2xl sm:text-3xl font-bold text-white">O'simlik nomi</h2>
+                        <p id="modal-latin" class="text-sm italic text-emerald-200 mt-0.5">Lotincha nomi</p>
+                    </div>
+                </div>
+
+                <button id="modal-fav-btn" onclick="toggleFavoriteFromModal()" class="px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-sm font-semibold flex items-center space-x-2 transition shrink-0">
+                    <i id="modal-fav-icon" class="fa-regular fa-heart text-rose-300"></i>
+                    <span id="modal-fav-text">Saqlash</span>
+                </button>
+            </div>
+
+            <!-- Modal Body (Batafsil ma'lumotlar) -->
+            <div class="p-6 sm:p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+                
+                <!-- Asosiy ko'rsatkichlar (Umr ko'rishi, Yorug'lik, Sug'orish, Harorat) -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                    <div class="bg-sage-50 p-3.5 rounded-2xl border border-sage-200/70">
+                        <div class="text-emerald-700 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                            <span id="lbl-lifespan">Umr ko'rishi</span>
+                        </div>
+                        <p id="modal-lifespan" class="text-sm font-bold text-slate-900">100 - 300 yil</p>
+                    </div>
+
+                    <div class="bg-amber-50/70 p-3.5 rounded-2xl border border-amber-200/70">
+                        <div class="text-amber-700 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                            <i class="fa-solid fa-sun"></i>
+                            <span id="lbl-light">Yorug'lik</span>
+                        </div>
+                        <p id="modal-light" class="text-sm font-semibold text-slate-800">Quyoshsevar</p>
+                    </div>
+
+                    <div class="bg-sky-50/70 p-3.5 rounded-2xl border border-sky-200/70">
+                        <div class="text-sky-700 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                            <i class="fa-solid fa-droplet"></i>
+                            <span id="lbl-water">Sug'orish</span>
+                        </div>
+                        <p id="modal-water" class="text-sm font-semibold text-slate-800">O'rtacha</p>
+                    </div>
+
+                    <div class="bg-rose-50/60 p-3.5 rounded-2xl border border-rose-200/70">
+                        <div class="text-rose-700 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                            <i class="fa-solid fa-temperature-half"></i>
+                            <span id="lbl-temp">Harorat</span>
+                        </div>
+                        <p id="modal-temp" class="text-sm font-semibold text-slate-800">+15°C ... +28°C</p>
+                    </div>
+                </div>
+
+                <!-- Parvarish qilish bo'yicha to'liq yo'riqnoma -->
+                <div class="bg-white rounded-2xl p-5 border border-sage-200 shadow-sm">
+                    <h3 class="font-serif text-lg font-bold text-forest-900 flex items-center gap-2 mb-2.5">
+                        <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-hand-holding-droplet"></i>
+                        </span>
+                        <span id="lbl-care-guide">Parvarish qilish qoidalari</span>
+                    </h3>
+                    <p id="modal-care" class="text-sm sm:text-base text-slate-700 leading-relaxed">
+                        Parvarish matni...
+                    </p>
+                </div>
+
+                <!-- Foydalari va Shifobaxsh xususiyatlari -->
+                <div class="bg-emerald-50/60 rounded-2xl p-5 border border-emerald-200/80">
+                    <h3 class="font-serif text-lg font-bold text-forest-900 flex items-center gap-2 mb-2.5">
+                        <span class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-heart-pulse"></i>
+                        </span>
+                        <span id="lbl-benefits">Foydalari va ahamiyati</span>
+                    </h3>
+                    <p id="modal-benefits" class="text-sm sm:text-base text-slate-700 leading-relaxed">
+                        Foydalari matni...
+                    </p>
+                </div>
+
+                <!-- Qiziqarli fakt -->
+                <div class="bg-amber-50/80 rounded-2xl p-4 border border-amber-200/80 flex items-start gap-3.5">
+                    <div class="text-amber-500 text-xl mt-0.5">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <div>
+                        <h4 id="lbl-fact" class="text-xs font-bold uppercase tracking-wider text-amber-800 mb-1">Qiziqarli fakt</h4>
+                        <p id="modal-fact" class="text-sm text-slate-700 leading-relaxed">Fakt matni...</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-forest-900 text-sage-200 py-6 border-t border-forest-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-leaf text-emerald-400"></i>
+                <span class="font-serif font-bold text-white text-sm">FloraPedia</span>
+                <span>— <span id="ui-footer-text">Tabiatni asrang va o'rganing!</span></span>
+            </div>
+            <p class="text-sage-400">O'zbek • Русский • English</p>
+        </div>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 1. 3 TILLI INTERFEYS LUG'ATI (UZ, RU, EN)
+        // ==========================================
+        const uiTranslations = {
+            uz: {
+                subtitle: "Tabiat Ensiklopediyasi",
+                favoritesBtn: "Sevimlilar",
+                badge: "🌿 18 xil noyob va foydali o'simliklar bazasi",
+                heroTitle: "Tabiat mo'jizalari va o'simliklar dunyosini kashf eting",
+                heroDesc: "Har bir o'simlikning qancha yil umr ko'rishi, to'g'ri parvarish qilish sirlari hamda inson salomatligi va tabiat uchun foydalari haqida 3 tilda batafsil ma'lumot oling.",
+                searchPlaceholder: "O'simlik nomi, foydasi yoki parvarishi bo'yicha izlang...",
+                showingText: "Ko'rsatilmoqda:",
+                emptyTitle: "O'simlik topilmadi",
+                emptyDesc: "Qidiruv so'zini o'zgartirib ko'ring yoki barcha kategoriyalarni tanlang.",
+                resetBtn: "Barcha o'simliklarni ko'rsatish",
+                lifespanLabel: "Umr ko'rishi",
+                lightLabel: "Yorug'lik",
+                waterLabel: "Sug'orish",
+                tempLabel: "Harorat",
+                careGuideLabel: "Parvarish qilish qoidalari",
+                benefitsLabel: "Foydalari va ahamiyati",
+                factLabel: "Qiziqarli fakt",
+                readMore: "Batafsil o'qish",
+                saveBtn: "Saqlash",
+                savedBtn: "Saqlangan",
+                footerText: "Tabiatni asrang va o'rganing!",
+                categories: {
+                    all: "Barchasi",
+                    trees: "Daraxtlar",
+                    flowers: "Gullar va xona o'simliklari",
+                    medicinal: "Dorivor o'simliklar",
+                    succulents: "Sukkulentlar va kaktuslar",
+                    fruits: "Mevali va madaniy"
+                }
+            },
+            ru: {
+                subtitle: "Энциклопедия Природы",
+                favoritesBtn: "Избранное",
+                badge: "🌿 База из 18 уникальных и полезных растений",
+                heroTitle: "Откройте для себя чудеса природы и мир растений",
+                heroDesc: "Узнайте подробно на 3 языках о продолжительности жизни каждого растения, секретах правильного ухода и их пользе для здоровья человека и природы.",
+                searchPlaceholder: "Поиск по названию, пользе или уходу...",
+                showingText: "Показано:",
+                emptyTitle: "Растения не найдены",
+                emptyDesc: "Попробуйте изменить поисковый запрос или выберите все категории.",
+                resetBtn: "Показать все растения",
+                lifespanLabel: "Продолжительность жизни",
+                lightLabel: "Освещение",
+                waterLabel: "Полив",
+                tempLabel: "Температура",
+                careGuideLabel: "Правила ухода",
+                benefitsLabel: "Польза и значение",
+                factLabel: "Интересный факт",
+                readMore: "Подробнее",
+                saveBtn: "В избранное",
+                savedBtn: "Сохранено",
+                footerText: "Берегите и изучайте природу!",
+                categories: {
+                    all: "Все",
+                    trees: "Деревья",
+                    flowers: "Цветы и комнатные",
+                    medicinal: "Лекарственные",
+                    succulents: "Суккуленты и кактусы",
+                    fruits: "Плодовые и культурные"
+                }
+            },
+            en: {
+                subtitle: "Nature Encyclopedia",
+                favoritesBtn: "Favorites",
+                badge: "🌿 Database of 18 unique and beneficial plants",
+                heroTitle: "Discover the Wonders of Nature and the Plant Kingdom",
+                heroDesc: "Explore detailed information in 3 languages about each plant's lifespan, proper care instructions, and health & ecological benefits.",
+                searchPlaceholder: "Search by plant name, benefits, or care...",
+                showingText: "Showing:",
+                emptyTitle: "No plants found",
+                emptyDesc: "Try adjusting your search query or select all categories.",
+                resetBtn: "Show all plants",
+                lifespanLabel: "Lifespan",
+                lightLabel: "Sunlight",
+                waterLabel: "Watering",
+                tempLabel: "Temperature",
+                careGuideLabel: "Care Instructions",
+                benefitsLabel: "Health & Ecological Benefits",
+                factLabel: "Interesting Fact",
+                readMore: "Read Details",
+                saveBtn: "Save",
+                savedBtn: "Saved",
+                footerText: "Protect and explore nature!",
+                categories: {
+                    all: "All Plants",
+                    trees: "Trees",
+                    flowers: "Flowers & Houseplants",
+                    medicinal: "Medicinal Herbs",
+                    succulents: "Succulents & Cacti",
+                    fruits: "Fruit & Crop Plants"
+                }
+            }
+        };
+
+        // ==========================================
+        // 2. 18 TA O'SIMLIKNING TO'LIQ 3 TILLI BAZASI
+        // ==========================================
+        const plantsDatabase = [
+            {
+                id: "chinor-oak",
+                category: "trees",
+                icon: "🌳",
+                gradient: "from-emerald-800 to-teal-900",
+                latin: "Platanus orientalis / Quercus",
+                uz: {
+                    name: "Sharq Chinori (Eman)",
+                    lifespan: "500 – 1000+ yil",
+                    light: "To'liq quyosh",
+                    water: "O'rtacha (yoshligida ko'proq)",
+                    temp: "-25°C ... +42°C",
+                    care: "Unumdor, chuqur va namlikni yaxshi saqlaydigan tuproqni yoqtiradi. Dastlabki 3-5 yilda muntazam sug'orish talab etiladi, voyaga yetgach ildizlari yer osti suvlariga yetib boradi va qurg'oqchilikka chidamli bo'ladi. Bahorda qurigan shoxlarini butash lozim.",
+                    benefits: "Havoni chang va zararli gazlardan (karbonat angidriddan) eng kuchli tozalovchi daraxtlardan biri. Keng soyasi mikroiqlimni salqinlashtiradi, po'stlog'i va barglari xalq tabobatida yallig'lanishga qarshi ishlatiladi.",
+                    fact: "O'zbekistonning Urgut va Boysun hududlarida yoshi 1000 yildan oshgan ulkan chinor daraxtlari hozirgacha yashnab turibdi."
+                },
+                ru: {
+                    name: "Восточный Чинар (Дуб)",
+                    lifespan: "500 – 1000+ лет",
+                    light: "Полное солнце",
+                    water: "Умеренный (чаще в молодости)",
+                    temp: "-25°C ... +42°C",
+                    care: "Предпочитает плодородную, глубокую и умеренно влажную почву. В первые 3-5 лет требует регулярного полива, позже мощная корневая система сама добывает влагу. Весной рекомендуется санитарная обрезка сухих ветвей.",
+                    benefits: "Один из лучших природных фильтров воздуха, поглощающий пыль и углекислый газ. Густая крона создает прохладный микроклимат, а кора и листья применяются в народной медицине как вяжущее и противовоспалительное средство.",
+                    fact: "В Узбекистане (в Ургуте и Байсуне) сохранились гигантские чинары, возраст которых превышает 1000 лет."
+                },
+                en: {
+                    name: "Oriental Plane Tree (Oak)",
+                    lifespan: "500 – 1000+ years",
+                    light: "Full Sun",
+                    water: "Moderate (more when young)",
+                    temp: "-25°C ... +42°C",
+                    care: "Thrives in deep, fertile, well-drained soil. Needs consistent watering during its first 3–5 years until its deep taproot establishes. Prune dead branches in early spring to maintain a strong canopy structure.",
+                    benefits: "Exceptional air purifier that traps urban dust and absorbs large amounts of CO2. Provides dense cooling shade, while its bark and leaves have traditional astringent and anti-inflammatory uses.",
+                    fact: "Ancient plane trees over 1,000 years old still thrive in Uzbekistan, with hollows large enough to fit a small room."
+                }
+            },
+            {
+                id: "aloe-vera",
+                category: "succulents",
+                icon: "🪴",
+                gradient: "from-teal-700 to-emerald-900",
+                latin: "Aloe barbadensis miller",
+                uz: {
+                    name: "Aloe Vera (Sabur)",
+                    lifespan: "12 – 25 yil",
+                    light: "Yorqin, tarqoq nur",
+                    water: "Kam (tuproq qurishida)",
+                    temp: "+15°C ... +30°C",
+                    care: "Kaktuslar uchun mo'ljallangan qumli, suvni yaxshi o'tkazuvchi tuproqqa eking. Tuvak tagida drenaj teshiklari bo'lishi shart. Yozda 2 haftada bir, qishda oyiga bir marta sug'oring. Barglari orasiga suv tushirmaslik kerak.",
+                    benefits: "Barglari ichidagi shaffof gel kuyish, yaralar va teri toshmalarini tez bitiradi. Terini chuqur namlantiradi, immunitetni oshiradi va xona havosini kechasi ham kislorod bilan boyitadi.",
+                    fact: "Qadimgi Misrda Aloe Verani «Abadiyat o'simligi» deb atashgan va Kleopatra undan go'zallik eliksiri sifatida foydalangan."
+                },
+                ru: {
+                    name: "Алоэ Вера (Столетник)",
+                    lifespan: "12 – 25 лет",
+                    light: "Яркий рассеянный свет",
+                    water: "Редкий (после просыхания)",
+                    temp: "+15°C ... +30°C",
+                    care: "Высаживайте в рыхлый грунт для суккулентов с хорошим дренажем. Летом поливайте раз в 2 недели, зимой — раз в месяц. Избегайте попадания воды в центр розетки листьев, чтобы предотвратить загнивание.",
+                    benefits: "Гель внутри листьев мгновенно успокаивает ожоги, заживляет порезы и увлажняет кожу. Укрепляет иммунитет, улучшает пищеварение и выделяет кислород в помещении даже в ночное время.",
+                    fact: "В Древнем Египте алоэ называли «растением бессмертия», а царица Клеопатра использовала его в ежедневном уходе за кожей."
+                },
+                en: {
+                    name: "Aloe Vera",
+                    lifespan: "12 – 25 years",
+                    light: "Bright, indirect light",
+                    water: "Low (when soil is dry)",
+                    temp: "+15°C ... +30°C",
+                    care: "Plant in well-draining cactus or succulent mix in a pot with drainage holes. Water deeply every 2 weeks in summer and once a month in winter. Avoid letting water sit in the leaf rosette.",
+                    benefits: "The soothing gel inside its leaves heals minor burns, cuts, and skin irritations. Rich in antioxidants and vitamins, it also purifies indoor air by releasing oxygen at night.",
+                    fact: "Ancient Egyptians called Aloe Vera the 'Plant of Immortality,' and Cleopatra famously used its gel as part of her beauty regimen."
+                }
+            },
+            {
+                id: "lavender",
+                category: "medicinal",
+                icon: "🪻",
+                gradient: "from-purple-800 to-indigo-900",
+                latin: "Lavandula angustifolia",
+                uz: {
+                    name: "Lavanda",
+                    lifespan: "15 – 20 yil",
+                    light: "To'liq quyosh nuri",
+                    water: "Kam (qurg'oqchilikka chidamli)",
+                    temp: "-15°C ... +35°C",
+                    care: "Quyoshli joy va ishqoriy, yengil tuproqni yoqtiradi. Ortiqcha namlik ildizini chiritadi, shuning uchun tuprog'i to'liq qurigandagina sug'oring. Gullab bo'lgach, butasini shakllantirish uchun uchlarini biroz qirqib turing.",
+                    benefits: "Efir moyi asab tizimini tinchlantiradi, uyqusizlik va stressni bartaraf etadi. Bosh og'rig'ini kamaytiradi, shuningdek, kuya va chivinlarni tabiiy ravishda haydaydi.",
+                    fact: "Lavanda gullari quriganidan keyin ham o'zining xushbo'y hidini 5 yilgacha saqlab qolish xususiyatiga ega."
+                },
+                ru: {
+                    name: "Лаванда узколистная",
+                    lifespan: "15 – 20 лет",
+                    light: "Полное солнце",
+                    water: "Умеренный / редкий",
+                    temp: "-15°C ... +35°C",
+                    care: "Любит открытое солнце и легкую, хорошо дренированную почву. Не переносит застоя воды — поливайте только после высыхания грунта. После цветения проводите легкую обрезку для поддержания пышной формы куста.",
+                    benefits: "Эфирное масло лаванды снимает стресс, тревожность и помогает при бессоннице. Обладает антисептическим действием, облегчает головную боль и отпугивает моль и комаров.",
+                    fact: "Даже в засушенном виде соцветия лаванды способны сохранять свой успокаивающий аромат до 5 лет."
+                },
+                en: {
+                    name: "English Lavender",
+                    lifespan: "15 – 20 years",
+                    light: "Full Sun",
+                    water: "Low (drought-tolerant)",
+                    temp: "-15°C ... +35°C",
+                    care: "Needs at least 6 hours of direct sunlight daily and sandy, well-drained soil. Water sparingly only when the soil is dry. Prune lightly after flowering to encourage dense growth and prevent woody stems.",
+                    benefits: "Its essential oil is renowned for reducing anxiety, relieving headaches, and improving sleep quality. It also has natural antiseptic properties and acts as an eco-friendly insect repellent.",
+                    fact: "Dried lavender buds can retain their calming fragrance for up to 5 years, making them a staple in aromatherapy."
+                }
+            },
+            {
+                id: "monstera",
+                category: "flowers",
+                icon: "🌿",
+                gradient: "from-emerald-700 to-green-900",
+                latin: "Monstera deliciosa",
+                uz: {
+                    name: "Monstera (Teshikbarg)",
+                    lifespan: "20 – 40 yil",
+                    light: "Yorqin, tarqoq yorug'lik",
+                    water: "Haftada 1-2 marta",
+                    temp: "+18°C ... +29°C",
+                    care: "To'g'ridan-to'g'ri quyosh nuri barglarini kuydirishi mumkin, shuning uchun deraza yonidagi yarim soya joy ideal. Tuproqning ustki 3-4 sm qismi quriganda sug'oring. Barglarini nam mato bilan artib, suv purkab turing.",
+                    benefits: "Katta yashil barglari xonadagi namlik muvozanatini saqlaydi, havodagi formaldegid kabi zararli moddalarni yutadi va ish unumdorligini oshiruvchi estetik muhit yaratadi.",
+                    fact: "Tabiatda tropik o'rmonlarda Monstera barglaridagi teshiklar kuchli bo'ron shamollari va jala yomg'irlarining bargni yirtmasdan o'tib ketishi uchun shakllangan."
+                },
+                ru: {
+                    name: "Монстера деликатесная",
+                    lifespan: "20 – 40 лет",
+                    light: "Яркий рассеянный свет",
+                    water: "1–2 раза в неделю",
+                    temp: "+18°C ... +29°C",
+                    care: "Берегите от прямых солнечных лучей, вызывающих ожоги листьев. Поливайте, когда верхний слой почвы просохнет на 3–4 см. Регулярно протирайте крупные листья влажной губкой и опрыскивайте воздух вокруг.",
+                    benefits: "Эффективно увлажняет воздух в помещении, поглощает вредные летучие соединения и создает расслабляющую тропическую атмосферу, снижающую утомляемость глаз.",
+                    fact: "Резные отверстия на листьях монстеры возникли в ходе эволюции, чтобы тропические ливни и ураганные ветры свободно проходили сквозь них, не ломая растение."
+                },
+                en: {
+                    name: "Monstera Deliciosa",
+                    lifespan: "20 – 40 years",
+                    light: "Bright, indirect light",
+                    water: "Every 1–2 weeks",
+                    temp: "+18°C ... +29°C",
+                    care: "Place in bright, filtered light away from harsh direct sun. Water when the top 2 inches of soil feel dry. Wipe dust off its large leaves regularly and mist occasionally to mimic tropical humidity.",
+                    benefits: "Improves indoor air quality and naturally increases room humidity through transpiration. Its lush foliage brings a calming biophilic aesthetic that reduces mental fatigue.",
+                    fact: "The iconic holes (fenestrations) in Monstera leaves evolved to let heavy tropical rain and hurricane winds pass through without tearing the leaf."
+                }
+            },
+            {
+                id: "rose",
+                category: "flowers",
+                icon: "🌹",
+                gradient: "from-rose-700 to-red-900",
+                latin: "Rosa",
+                uz: {
+                    name: "Atirgul",
+                    lifespan: "15 – 35 yil",
+                    light: "Kuniga 6+ soat quyosh",
+                    water: "Haftada 2-3 marta (ildiziga)",
+                    temp: "-10°C ... +32°C",
+                    care: "Ertalabki quyosh nuri tushadigan va shamol yaxshi aylanadigan joyga eking. Suvni barglariga emas, faqat ildiz ostiga quying. Bahor va yozda organik o'g'itlar bering hamda qurigan gullarini muntazam qirqib turing.",
+                    benefits: "Atirgul barglaridan tayyorlangan choy va gulob (atirgul suvi) C vitaminiga boy bo'lib, terini yoshartiradi, ovqat hazm qilishni yaxshilaydi va kayfiyatni ko'taradi.",
+                    fact: "Germaniyaning Xildesxaym sobori devorida o'sadigan «Ming yillik atirgul» butasining yoshi 1000 yildan oshgan va u dunyodagi eng keksa atirgul hisoblanadi."
+                },
+                ru: {
+                    name: "Роза садовая",
+                    lifespan: "15 – 35 лет",
+                    light: "6+ часов солнца в день",
+                    water: "2–3 раза в неделю под корень",
+                    temp: "-10°C ... +32°C",
+                    care: "Высаживайте на солнечном, хорошо проветриваемом участке. Поливайте строго под корень, чтобы избежать грибковых болезней листьев. Подкармливайте в период бутонизации и вовремя удаляйте увядшие бутоны.",
+                    benefits: "Лепестки роз богаты витамином С и антиоксидантами. Розовая вода тонизирует и омолаживает кожу, а чай из бутонов укрепляет иммунитет и снимает нервное напряжение.",
+                    fact: "Самый старый живой куст розы в мире растет у стены собора в немецком городе Хильдесхайм — ему уже более 1000 лет."
+                },
+                en: {
+                    name: "Garden Rose",
+                    lifespan: "15 – 35 years",
+                    light: "6+ hours of full sun",
+                    water: "2–3 times weekly at base",
+                    temp: "-10°C ... +32°C",
+                    care: "Plant in rich, well-draining soil with good air circulation. Water deeply at the base rather than overhead to keep foliage dry. Fertilize during spring growth and deadhead spent blooms for continuous flowering.",
+                    benefits: "Rose petals are rich in Vitamin C and polyphenols. Rosewater soothes and hydrates skin, while rosehip and petal teas support immunity and uplift mood.",
+                    fact: "The world's oldest living rosebush grows on the wall of Hildesheim Cathedral in Germany and is documented to be over 1,000 years old."
+                }
+            },
+            {
+                id: "mint",
+                category: "medicinal",
+                icon: "🌱",
+                gradient: "from-emerald-600 to-teal-800",
+                latin: "Mentha piperita",
+                uz: {
+                    name: "Yalpiz (Qalampir yalpiz)",
+                    lifespan: "5 – 10 yil (ko'p yillik)",
+                    light: "Quyosh yoki yarim soya",
+                    water: "Tez-tez (namsevar)",
+                    temp: "-15°C ... +30°C",
+                    care: "Tuprog'i doimo biroz nam bo'lib turishi kerak, lekin botqoqlanmasin. Yalpiz ildizlari juda tez tarqaladi, shuning uchun uni alohida tuvakda yoki chegaralangan joyda o'stirgan ma'qul. Barglarini tez-tez chimdib turish uni yanada quyuqlashtiradi.",
+                    benefits: "Tarkibidagi mentol moddasi oshqozon-ichak faoliyatini yaxshilaydi, ko'ngil aynishini to'xtatadi, nafas yo'llarini ochadi va asablarni tinchlantiradi.",
+                    fact: "Qadimgi Yunonistonda mehmonlarni kutib olishdan oldin dasturxon stollarini yangi uzilgan yalpiz barglari bilan ishqalab xushbo'ylashtirishgan."
+                },
+                ru: {
+                    name: "Мята перечная",
+                    lifespan: "5 – 10 лет (многолетник)",
+                    light: "Солнце или полутень",
+                    water: "Регулярный (влаголюбива)",
+                    temp: "-15°C ... +30°C",
+                    care: "Поддерживайте почву постоянно слегка влажной. Корневая система мяты очень агрессивно разрастается, поэтому в саду ее лучше сажать в ограничители или горшки. Регулярная прищипка верхушек стимулирует рост пышной листвы.",
+                    benefits: "Высокое содержание ментола улучшает пищеварение, снимает спазмы, освежает дыхание, облегчает заложенность носа и помогает при головной боли.",
+                    fact: "В Древней Греции столы перед приходом гостей натирали свежими листьями мяты как знак гостеприимства и для свежести воздуха."
+                },
+                en: {
+                    name: "Peppermint",
+                    lifespan: "5 – 10 years (perennial)",
+                    light: "Full sun to partial shade",
+                    water: "Frequent (keep soil moist)",
+                    temp: "-15°C ... +30°C",
+                    care: "Keep soil consistently moist and rich in organic matter. Because mint spreads rapidly via underground runners, grow it in containers to prevent it from taking over garden beds. Harvest tops frequently.",
+                    benefits: "Packed with menthol, peppermint soothes indigestion, relieves tension headaches, clears nasal congestion, and provides a natural cooling and calming effect.",
+                    fact: "In ancient Greece, dining tables were rubbed with fresh peppermint leaves before guests arrived as a symbol of welcome."
+                }
+            },
+            {
+                id: "baobab",
+                category: "trees",
+                icon: "🌴",
+                gradient: "from-amber-800 to-orange-950",
+                latin: "Adansonia",
+                uz: {
+                    name: "Baobab daraxti",
+                    lifespan: "1500 – 3000 yil",
+                    light: "To'liq quyosh",
+                    water: "Juda kam",
+                    temp: "+15°C ... +45°C",
+                    care: "Issiq iqlim va qumloq, suv o'tkazuvchan tuproqni talab qiladi. Uyda bonsai shaklida o'stirilganda qishda barglarini to'kadi — bu davrda sug'orishni deyarli to'xtatish kerak.",
+                    benefits: "«Hayot daraxti» deb nomlanadi: mevasida apelsinga qaraganda 6 baravar ko'p C vitamini, kaltsiy va antioksidantlar bor. Yo'g'on tanasi qurg'oqchilikda minglab litr suvni saqlaydi.",
+                    fact: "Baobab tanasining aylanasi 40-50 metrgacha yetishi mumkin va u o'z tanasida 120 000 litrgacha suv zaxirasini saqlay oladi."
+                },
+                ru: {
+                    name: "Баобаб",
+                    lifespan: "1500 – 3000 лет",
+                    light: "Полное солнце",
+                    water: "Очень редкий",
+                    temp: "+15°C ... +45°C",
+                    care: "Требует теплого климата и песчаной, хорошо дренированной почвы. При выращивании дома в виде бонсай зимой сбрасывает листья — в период покоя полив почти полностью прекращают.",
+                    benefits: "Называется «Деревом жизни»: мякоть его плодов содержит в 6 раз больше витамина С, чем апельсин, а также кальций и пребиотики. Огромный ствол служит резервуаром пресной воды в засуху.",
+                    fact: "Обхват ствола взрослого баобаба достигает 45 метров, а внутри древесины может накапливаться до 120 000 литров воды."
+                },
+                en: {
+                    name: "Baobab Tree",
+                    lifespan: "1,500 – 3,000 years",
+                    light: "Full Sun",
+                    water: "Very low",
+                    temp: "+15°C ... +45°C",
+                    care: "Requires warm temperatures and sandy, well-draining soil. When grown indoors as a bonsai, it enters dormancy in winter and drops its leaves—water sparingly during this resting phase.",
+                    benefits: "Known as the 'Tree of Life,' its nutrient-dense fruit pulp contains 6 times more Vitamin C than oranges, plus calcium and fiber. Its massive trunk stores water during severe droughts.",
+                    fact: "A mature baobab trunk can reach 45 meters in circumference and store up to 120,000 liters of water inside its fibrous wood."
+                }
+            },
+            {
+                id: "sequoia",
+                category: "trees",
+                icon: "🌲",
+                gradient: "from-emerald-900 to-slate-900",
+                latin: "Sequoiadendron giganteum",
+                uz: {
+                    name: "Ulkan Sekvoyya",
+                    lifespan: "2000 – 3200 yil",
+                    light: "Quyosh yoki yarim soya",
+                    water: "O'rtacha (nam iqlim)",
+                    temp: "-15°C ... +30°C",
+                    care: "Chuqur, nam va kislotali (nordon) tuproqni hamda salqin, nam havoni yoqtiradi. Yosh ko'chatlarni kuchli shamol va jazirama qurg'oqchilikdan himoya qilish zarur.",
+                    benefits: "Sayyoramizdagi eng ko'p uglerod gazini yutuvchi daraxt (oddiy daraxtlarga nisbatan 3-5 baravar ko'p). Qalin po'stlog'i o'rmon yong'inlariga chidamli bo'lib, ekotizimni saqlaydi.",
+                    fact: "Dunyodagi eng katta hajmli tirik organizm — «General Sherman» nomli sekvoyya daraxtining balandligi 83.8 metr, tanasining og'irligi esa 1900 tonnadan oshadi."
+                },
+                ru: {
+                    name: "Гигантская Секвойя",
+                    lifespan: "2000 – 3200 лет",
+                    light: "Солнце или полутень",
+                    water: "Умеренный (влажный климат)",
+                    temp: "-15°C ... +30°C",
+                    care: "Предпочитает глубокую, влажную, слабокислую почву и прохладный влажный воздух. Молодые саженцы нуждаются в регулярном поливе и защите от сильного зноя.",
+                    benefits: "Рекордсмен по поглощению углекислого газа на планете — удерживает в 3–5 раз больше углерода, чем обычные леса. Толстая кора до 60 см защищает дерево от лесных пожаров.",
+                    fact: "Самое массивное живое существо на Земле — секвойя «Генерал Шерман» высотой 83,8 метра и весом около 1900 тонн."
+                },
+                en: {
+                    name: "Giant Sequoia",
+                    lifespan: "2,000 – 3,200 years",
+                    light: "Full sun to partial shade",
+                    water: "Moderate (moist climate)",
+                    temp: "-15°C ... +30°C",
+                    care: "Thrives in deep, moist, slightly acidic soils with cool, humid air. Young saplings require consistent moisture and protection from extreme dry heat.",
+                    benefits: "Captures more carbon dioxide than almost any other tree species on Earth, playing a vital role in climate regulation. Its spongy, tannin-rich bark resists forest fires.",
+                    fact: "The 'General Sherman' sequoia is the largest living single-stem tree by volume on Earth, standing 83.8 meters tall and weighing over 1,900 tons."
+                }
+            },
+            {
+                id: "cactus",
+                category: "succulents",
+                icon: "🌵",
+                gradient: "from-lime-700 to-emerald-900",
+                latin: "Cactaceae (Echinocactus)",
+                uz: {
+                    name: "Tikanli Kaktus",
+                    lifespan: "30 – 150 yil",
+                    light: "Eng yorqin quyoshli joy",
+                    water: "Juda kam (oyiga 1-2 marta)",
+                    temp: "+10°C ... +40°C",
+                    care: "Janubiy deraza tokchasiga qo'ying. Yozda 2-3 haftada bir marta, qishda esa salqin xonada (+10...+15°C) oyiga 1 marta sug'oring. Ortiqcha suv kaktusning birinchi raqamli dushmanidir.",
+                    benefits: "Kompyuter va elektronika jihozlari yonida havoni ionlashtiradi, parvarish uchun deyarli vaqt talab qilmaydi va bahorda o'ta go'zal, yorqin gullar ochadi.",
+                    fact: "Kaktus tikanlari aslida suv bug'lanishini kamaytirish uchun shakli o'zgargan barglardir; ular shuningdek, quyosh nuridan soya beradi va havodagi shudringni yig'adi."
+                },
+                ru: {
+                    name: "Кактус (Эхинокактус)",
+                    lifespan: "30 – 150 лет",
+                    light: "Максимально солнечное место",
+                    water: "Очень редкий (1–2 раза в месяц)",
+                    temp: "+10°C ... +40°C",
+                    care: "Размещайте на самых солнечных южных окнах. Летом поливайте раз в 2–3 недели, а зимой в прохладе (+10...+15°C) — не чаще раза в месяц. Используйте исключительно минеральный грунт с песком.",
+                    benefits: "Неприхотливый зеленый питомец, который очищает воздух, выдерживает длительное отсутствие хозяев и при правильной зимовке радует экзотическими цветами.",
+                    fact: "Колючки кактуса — это видоизмененные листья: они защищают от животных, создают тень для стебля и собирают капли утренней росы."
+                },
+                en: {
+                    name: "Desert Cactus",
+                    lifespan: "30 – 150 years",
+                    light: "Direct, bright sunlight",
+                    water: "Very low (1–2 times/month)",
+                    temp: "+10°C ... +40°C",
+                    care: "Place on a bright south-facing windowsill. Water every 2–3 weeks in spring/summer and once a month in winter when kept cool. Overwatering is the main cause of root rot.",
+                    benefits: "Requires minimal maintenance while bringing sculptural beauty indoors. Produces vibrant blooms when given a proper cool winter rest period.",
+                    fact: "Cactus spines are actually modified leaves that reduce water loss, shade the stem from intense sun, and condense morning dew."
+                }
+            },
+            {
+                id: "lemon-tree",
+                category: "fruits",
+                icon: "🍋",
+                gradient: "from-yellow-600 to-amber-800",
+                latin: "Citrus limon",
+                uz: {
+                    name: "Limon daraxti (Meyer)",
+                    lifespan: "30 – 50 yil",
+                    light: "Yorqin quyosh nuri",
+                    water: "Haftada 2 marta (iliq suv)",
+                    temp: "+14°C ... +28°C",
+                    care: "Xona sharoitida ham a'lo darajada hosil beradi. Yorug' joyga qo'ying, barglariga tez-tez iliq suv purkab turing. Bahor va yozda sitrus o'simliklar uchun maxsus o'g'it bilan oziqlantiring.",
+                    benefits: "Mevalari C vitaminiga o'ta boy bo'lib, immunitetni mustahkamlaydi. Barglari havoga fitonsidlar (tabiiy antibakterial moddalar) chiqarib, xonadagi mikroblarni o'ldiradi.",
+                    fact: "Limon daraxti bir vaqtning o'zida ham xushbo'y gullar ochishi, ham yashil tugunchalar, ham pishgan sariq mevalar tugishi mumkin."
+                },
+                ru: {
+                    name: "Лимонное дерево (Мейер)",
+                    lifespan: "30 – 50 лет",
+                    light: "Яркий солнечный свет",
+                    water: "2 раза в неделю теплой водой",
+                    temp: "+14°C ... +28°C",
+                    care: "Прекрасно плодоносит в комнатных условиях. Любит светлые окна, опрыскивание листьев и полив отстоянной водой комнатной температуры. Весной и летом нуждается в подкормке для цитрусовых.",
+                    benefits: "Плоды богаты витамином С, укрепляющим иммунитет. Листья выделяют в воздух фитонциды — природные антисептики, очищающие комнату от бактерий и вирусов.",
+                    fact: "На одном лимонном дереве одновременно можно увидеть распускающиеся ароматные цветы, зеленые завязи и спелые желтые плоды."
+                },
+                en: {
+                    name: "Meyer Lemon Tree",
+                    lifespan: "30 – 50 years",
+                    light: "Bright, direct sunlight",
+                    water: "Twice weekly (room-temp water)",
+                    temp: "+14°C ... +28°C",
+                    care: "Adapts wonderfully to indoor containers. Provide 6–8 hours of sunlight, mist foliage to maintain humidity, and feed with citrus fertilizer during spring and summer.",
+                    benefits: "Produces Vitamin C-rich fruits that boost immunity. Its glossy leaves release natural phytoncides that purify indoor air and uplift mood with a fresh citrus scent.",
+                    fact: "A healthy lemon tree can simultaneously carry fragrant white blossoms, tiny green fruit buds, and ripe yellow lemons."
+                }
+            },
+            {
+                id: "ginseng",
+                category: "medicinal",
+                icon: "🌿",
+                gradient: "from-amber-700 to-stone-900",
+                latin: "Panax ginseng",
+                uz: {
+                    name: "Jenshen (Hayot ildizi)",
+                    lifespan: "50 – 100+ yil",
+                    light: "Soya va yarim soya",
+                    water: "O'rtacha (nam tuproq)",
+                    temp: "-10°C ... +25°C",
+                    care: "O'rmon ostidagi kabi salqin, soyali joy va chirindiga boy yumshoq tuproqni talab qiladi. To'g'ridan-to'g'ri quyosh nuridan ehtiyot qiling. Ildizi dorivor kuchga kirishi uchun kamida 5-6 yil o'sishi kerak.",
+                    benefits: "Dunyodagi eng kuchli tabiiy adaptogen: charchoqni yo'qotadi, aqliy va jismoniy quvvatni oshiradi, qon aylanishini yaxshilaydi va organizmning qarishini sekinlashtiradi.",
+                    fact: "Xitoy tilidan «Jenshen» so'zi «Odam-ildiz» deb tarjima qilinadi, chunki uning ildizi shaklan inson qomatiga juda o'xshab ketadi."
+                },
+                ru: {
+                    name: "Женьшень обыкновенный",
+                    lifespan: "50 – 100+ лет",
+                    light: "Тень или полутень",
+                    water: "Умеренный (влажная почва)",
+                    temp: "-10°C ... +25°C",
+                    care: "Требует тенистого места (как под пологом леса) и рыхлой, богатой перегноем почвы. Прямое солнце губительно для листьев. Целебную силу корень набирает только к 5–6 году жизни.",
+                    benefits: "Мощнейший природный адаптоген: повышает физическую и умственную работоспособность, снимает хроническую усталость, укрепляет иммунитет и тонизирует организм.",
+                    fact: "В переводе с китайского «Женьшень» означает «Человек-корень», так как его разветвленный корень поразительно напоминает фигуру человека."
+                },
+                en: {
+                    name: "Asian Ginseng",
+                    lifespan: "50 – 100+ years",
+                    light: "Deep to partial shade",
+                    water: "Moderate (moist, rich soil)",
+                    temp: "-10°C ... +25°C",
+                    care: "Mimics a forest floor environment: requires 70–80% shade and humus-rich, well-drained soil. Direct sun will scorch its leaves. Roots take 5–6 years to mature for medicinal harvest.",
+                    benefits: "Renowned adaptogen that boosts energy, sharpens cognitive focus, reduces fatigue, regulates blood sugar, and strengthens the immune system.",
+                    fact: "The name 'Ginseng' comes from the Chinese 'rénshēn,' meaning 'man-root,' due to the root's uncanny resemblance to a human figure."
+                }
+            },
+            {
+                id: "sunflower",
+                category: "fruits",
+                icon: "🌻",
+                gradient: "from-amber-500 to-yellow-700",
+                latin: "Helianthus annuus",
+                uz: {
+                    name: "Kungaboqar",
+                    lifespan: "1 yil (bir yillik)",
+                    light: "To'liq quyosh",
+                    water: "O'rtacha (ildizi chuqur)",
+                    temp: "+15°C ... +35°C",
+                    care: "Urug'larini bahorda quyoshli va shamoldan himoyalangan unumdor tuproqqa eking. Gullash davrida suvni ko'proq talab qiladi. Baland navlariga tayanch qoziq o'rnatish foydali.",
+                    benefits: "Urug'laridan olinadigan yog' E vitamini va foydali yog' kislotalariga boy. Shuningdek, kungaboqar tuproqdagi og'ir metallar va radiatsiyani o'ziga tortib, yerni tozalash xususiyatiga ega.",
+                    fact: "Yosh kungaboqar g'unchalari kun davomida sharqdan g'arbga qarab quyosh ortidan burilib boradi (gelitropizm), ochilgach esa doimo sharqqa qarab turadi."
+                },
+                ru: {
+                    name: "Подсолнечник однолетний",
+                    lifespan: "1 год (однолетник)",
+                    light: "Полное солнце",
+                    water: "Умеренный",
+                    temp: "+15°C ... +35°C",
+                    care: "Высевайте семена весной в плодородную почву на самом солнечном участке. Во время активного роста и формирования корзинки требует регулярного полива. Высоким сортам нужна опора.",
+                    benefits: "Семена и масло богаты витамином Е и полиненасыщенными жирными кислотами. Кроме того, подсолнечник способен очищать почву от тяжелых металлов и токсинов.",
+                    fact: "Молодые бутоны подсолнуха в течение дня поворачиваются вслед за солнцем с востока на запад, а раскрывшиеся цветы всегда смотрят на восток."
+                },
+                en: {
+                    name: "Common Sunflower",
+                    lifespan: "1 year (annual)",
+                    light: "Full Sun",
+                    water: "Moderate",
+                    temp: "+15°C ... +35°C",
+                    care: "Sow seeds directly into fertile, well-drained soil after the last spring frost in a sunny location. Water deeply during growth and flowering; tall varieties benefit from staking.",
+                    benefits: "Seeds and oil are packed with Vitamin E, selenium, and healthy fats. Sunflowers are also used in phytoremediation to extract heavy metals and toxins from polluted soil.",
+                    fact: "Young sunflower buds track the sun from east to west every day (heliotropism), while mature blooms permanently face east to attract pollinators."
+                }
+            },
+            {
+                id: "olive-tree",
+                category: "trees",
+                icon: "🫒",
+                gradient: "from-olive-700 bg-emerald-800 to-stone-800",
+                latin: "Olea europaea",
+                uz: {
+                    name: "Zaytun daraxti",
+                    lifespan: "500 – 2000 yil",
+                    light: "To'liq quyosh",
+                    water: "Kam (qurg'oqchilikka chidamli)",
+                    temp: "-5°C ... +40°C",
+                    care: "Issiq, quyoshli joy va toshloq-qumloq tuproqni yoqtiradi. Ortiqcha suv ildizini chirishiga olib keladi. Uyda tuvakda o'stirilsa, qishda salqinroq (+8...+12°C) va yorug' joyga qo'ying.",
+                    benefits: "Zaytun moyi yurak-qon tomir kasalliklarining oldini oladi, xolesterinni kamaytiradi va umrni uzaytiradi. Barglari damlamasi qon bosimini me'yorlashtiradi.",
+                    fact: "Zaytun daraxti tinchlik va donolik ramzi hisoblanadi; Gretsiyaning Krit orolida yoshi 3000 yildan oshgan zaytun daraxti haligacha meva bermoqda."
+                },
+                ru: {
+                    name: "Оливковое дерево",
+                    lifespan: "500 – 2000 лет",
+                    light: "Полное солнце",
+                    water: "Редкий (засухоустойчиво)",
+                    temp: "-5°C ... +40°C",
+                    care: "Любит обилие солнца и легкую каменисто-песчаную почву с отличным дренажем. Не терпит переувлажнения. В комнатных условиях зимой нуждается в прохладной (+8...+12°C) и светлой зимовке.",
+                    benefits: "Оливковое масло — основа здорового питания, защищающая сердце и сосуды. Экстракт листьев оливы укрепляет иммунитет и нормализует артериальное давление.",
+                    fact: "Олива — древний символ мира. На острове Крит растет оливковое дерево возрастом более 3000 лет, которое до сих пор приносит плоды."
+                },
+                en: {
+                    name: "Olive Tree",
+                    lifespan: "500 – 2,000 years",
+                    light: "Full Sun",
+                    water: "Low (drought-resistant)",
+                    temp: "-5°C ... +40°C",
+                    care: "Thrives in hot, sunny spots with well-draining, rocky or sandy soil. Avoid overwatering. If kept indoors in pots, provide maximum sunlight and a cool winter rest (+8°C to +12°C).",
+                    benefits: "Olive oil is rich in heart-healthy monounsaturated fats and polyphenols. Olive leaf extract supports healthy blood pressure and strong immunity.",
+                    fact: "A universal symbol of peace, an ancient olive tree on the island of Crete is over 3,000 years old and still produces olives today."
+                }
+            },
+            {
+                id: "chamomile",
+                category: "medicinal",
+                icon: "🌼",
+                gradient: "from-yellow-600 to-emerald-800",
+                latin: "Matricaria chamomilla",
+                uz: {
+                    name: "Dorivor Moychechak",
+                    lifespan: "1 yil (o'z-o'zidan ko'payadi)",
+                    light: "Quyoshli ochiq joy",
+                    water: "O'rtacha",
+                    temp: "+5°C ... +30°C",
+                    care: "Parvarishga o'ta talabchan emas. Bahorda urug'larini yengil tuproq yuzasiga seping (chuqur ko'mmang, unib chiqishi uchun yorug'lik kerak). Gullari to'liq ochilganda terib olib, soyada quriting.",
+                    benefits: "Eng mashhur tabiiy tinchlantiruvchi va yallig'lanishga qarshi o'simlik. Moychechak choyi uyquni yaxshilaydi, oshqozon og'rig'ini qoldiradi, tomoq chayishda va teri parvarishida qo'llaniladi.",
+                    fact: "Bog'bonlar moychechakni «O'simliklar shifokori» deb atashadi, chunki u yonida o'sayotgan kasallangan o'simliklarning sog'ayishiga yordam beradi."
+                },
+                ru: {
+                    name: "Ромашка аптечная",
+                    lifespan: "1 год (самосев)",
+                    light: "Солнечное место",
+                    water: "Умеренный",
+                    temp: "+5°C ... +30°C",
+                    care: "Крайне неприхотлива. Семена высевают весной поверхностно, не заделывая глубоко в землю, так как для прорастания им нужен свет. Соцветия собирают в начале цветения и сушат в тени.",
+                    benefits: "Природный антисептик и спазмолитик. Ромашковый чай успокаивает нервную систему, улучшает сон, снимает воспаления желудка и горла, а отвар укрепляет волосы и кожу.",
+                    fact: "Садоводы называют ромашку «доктором растений» — высаженная рядом с ослабленными культурами, она помогает им быстрее восстановиться."
+                },
+                en: {
+                    name: "German Chamomile",
+                    lifespan: "1 year (self-seeding)",
+                    light: "Full Sun",
+                    water: "Moderate",
+                    temp: "+5°C ... +30°C",
+                    care: "Very easy to grow. Scatter seeds on the surface of light soil in spring without covering them, as they need light to germinate. Harvest flower heads when fully open and dry in the shade.",
+                    benefits: "A classic herbal remedy with anti-inflammatory and calming properties. Chamomile tea promotes restful sleep, soothes upset stomachs, and calms skin irritation.",
+                    fact: "Gardeners call chamomile the 'Plant's Physician' because planting it near weak or ailing plants helps improve their overall health."
+                }
+            },
+            {
+                id: "bamboo",
+                category: "trees",
+                icon: "🎋",
+                gradient: "from-lime-700 to-teal-900",
+                latin: "Bambusoideae",
+                uz: {
+                    name: "Bambuk",
+                    lifespan: "30 – 100 yil",
+                    light: "Yorqin nur yoki yarim soya",
+                    water: "Ko'p (namsevar)",
+                    temp: "+10°C ... +35°C",
+                    care: "Namlikni va ozuqaviy moddalarga boy tuproqni sevadi. Bog'da ekilganda ildizlari tarqalib ketmasligi uchun chuqur to'siq qo'ying. Uyda «Baxt bambuki» (Dracaena) toza filtrlangan suvda ham o'sadi.",
+                    benefits: "Oddiy daraxtlarga qaraganda 35% ko'proq kislorod ishlab chiqaradi! Tuproq eroziyasining oldini oladi, poyalari esa ekologik toza qurilish materiali va mebel tayyorlashda ishlatiladi.",
+                    fact: "Bambuk — dunyodagi eng tez o'sadigan o'simlik: ayrim turlari bir sutkada (24 soatda) 90 santimetrgacha bo'y cho'zishi mumkin!"
+                },
+                ru: {
+                    name: "Бамбук",
+                    lifespan: "30 – 100 лет",
+                    light: "Яркий свет или полутень",
+                    water: "Обильный (влаголюбив)",
+                    temp: "+10°C ... +35°C",
+                    care: "Любит влажную, плодородную почву и высокую влажность воздуха. В саду требует установки подземных ограничителей для корней. Комнатный «бамбук счастья» может расти даже в отстоянной воде.",
+                    benefits: "Вырабатывает на 35% больше кислорода, чем обычные деревья той же площади. Укрепляет склоны от эрозии и служит возобновляемым эко-материалом.",
+                    fact: "Бамбук — абсолютный чемпион по скорости роста на Земле: некоторые его виды способны вырастать на 90 сантиметров всего за 24 часа."
+                },
+                en: {
+                    name: "Bamboo",
+                    lifespan: "30 – 100 years",
+                    light: "Bright light to partial shade",
+                    water: "High (loves moisture)",
+                    temp: "+10°C ... +35°C",
+                    care: "Prefers moist, fertile soil and good humidity. Install root barriers when planting outdoors to control spread. Indoor 'Lucky Bamboo' thrives in clean, filtered water or well-drained soil.",
+                    benefits: "Produces 35% more oxygen than an equivalent stand of trees and absorbs massive amounts of CO2. Prevents soil erosion and serves as a sustainable building material.",
+                    fact: "Bamboo is the fastest-growing plant on Earth—certain species can grow up to 90 centimeters (35 inches) in a single 24-hour period."
+                }
+            },
+            {
+                id: "snake-plant",
+                category: "flowers",
+                icon: "🪴",
+                gradient: "from-emerald-800 to-slate-900",
+                latin: "Dracaena trifasciata (Sansevieria)",
+                uz: {
+                    name: "Sansevieriya (Qaynona tili)",
+                    lifespan: "15 – 25 yil",
+                    light: "Har qanday (soyaga ham chidamli)",
+                    water: "Kam (2-3 haftada bir)",
+                    temp: "+12°C ... +32°C",
+                    care: "Eng chidamli xona o'simligi! Ham quyoshli derazada, ham qorong'uroq burchakda o'saveradi. Tuprog'i to'liq qurigandagina sug'oring; qishda oyda bir marta sug'orish kifoya.",
+                    benefits: "NASA tadqiqotlariga ko'ra, havodagi benzol, formaldegid va trixloretilen kabi zaharli moddalarni eng yaxshi tozalovchi o'simlik. Kechasi kislorod chiqargani uchun yotoqxona uchun ideal.",
+                    fact: "Aksariyat o'simliklar kislorodni faqat kunduzi ishlab chiqarsa, Sansevieriya CAM-fotosintez tufayli kechasi ham xonani toza kislorod bilan ta'minlaydi."
+                },
+                ru: {
+                    name: "Сансевиерия (Щучий хвост)",
+                    lifespan: "15 – 25 лет",
+                    light: "От яркого света до полутени",
+                    water: "Редкий (раз в 2–3 недели)",
+                    temp: "+12°C ... +32°C",
+                    care: "Самое неубиваемое комнатное растение. Легко переносит сухой воздух и недостаток света. Поливайте только после полного просыхания грунта, избегая попадания воды в розетку листьев.",
+                    benefits: "По данным исследований NASA, входит в топ растений по очистке воздуха от бензола и формальдегида. Выделяет кислород ночью, поэтому идеально подходит для спальни.",
+                    fact: "В отличие от большинства комнатных цветов, сансевиерия активно вырабатывает кислород в ночное время суток, улучшая качество сна."
+                },
+                en: {
+                    name: "Snake Plant (Sansevieria)",
+                    lifespan: "15 – 25 years",
+                    light: "Low light to bright indirect",
+                    water: "Low (every 2–3 weeks)",
+                    temp: "+12°C ... +32°C",
+                    care: "Virtually indestructible houseplant that tolerates low light and dry indoor air. Allow soil to dry out completely between waterings, and water only once a month during winter.",
+                    benefits: "Ranked by NASA as a top air-purifying plant capable of filtering formaldehyde and benzene. Converts CO2 into oxygen at night, making it ideal for bedrooms.",
+                    fact: "Unlike most houseplants that release oxygen only during the day, the Snake Plant produces fresh oxygen throughout the night."
+                }
+            },
+            {
+                id: "pomegranate",
+                category: "fruits",
+                icon: "🍎",
+                gradient: "from-red-800 to-rose-950",
+                latin: "Punica granatum",
+                uz: {
+                    name: "Anor daraxti",
+                    lifespan: "100 – 200 yil",
+                    light: "To'liq quyosh",
+                    water: "O'rtacha (meva tugishda muntazam)",
+                    temp: "-12°C ... +42°C",
+                    care: "Issiqsevar va quyoshsevar o'simlik. Qurg'oqchilikka chidamli bo'lsa-da, mevalari yorilmasligi uchun yozda bir me'yorda sug'orib turish kerak. Kuzda sovuq tushishidan oldin novdalari ko'miladi.",
+                    benefits: "Anor sharbati qondagi gemoglobinni ko'taradi, yurakni mustahkamlaydi va kuchli antioksidant hisoblanadi. Po'stlog'i damlamasi ichak infeksiyalariga qarshi samarali vositadir.",
+                    fact: "Bitta pishgan anor mevasining ichida o'rtacha 600 tadan 1400 tagacha suvli donachalar bo'lishi mumkin."
+                },
+                ru: {
+                    name: "Гранат обыкновенный",
+                    lifespan: "100 – 200 лет",
+                    light: "Полное солнце",
+                    water: "Умеренный (регулярный летом)",
+                    temp: "-12°C ... +42°C",
+                    care: "Любит жаркое солнце и хорошо дренированную почву. Засухоустойчив, но во время созревания плодов требует равномерного полива, чтобы гранаты не растрескивались.",
+                    benefits: "Гранат повышает уровень гемоглобина в крови, укрепляет сердце и сосуды, богат антиоксидантами и витаминами. Отвар кожуры применяется как природное вяжущее средство.",
+                    fact: "Внутри одного спелого плода граната в среднем насчитывается от 600 до 1400 сочных зерен."
+                },
+                en: {
+                    name: "Pomegranate Tree",
+                    lifespan: "100 – 200 years",
+                    light: "Full Sun",
+                    water: "Moderate (consistent in summer)",
+                    temp: "-12°C ... +42°C",
+                    care: "Loves hot, sunny climates and well-draining soil. Drought-tolerant once established, but consistent watering during fruit development prevents the fruit from splitting.",
+                    benefits: "Packed with powerful antioxidants (punicalagins) and Vitamin C. Supports heart health, boosts blood hemoglobin levels, and reduces inflammation.",
+                    fact: "A single ripe pomegranate contains anywhere from 600 to 1,400 jewel-like, juice-filled seeds (arils)."
+                }
+            },
+            {
+                id: "pine-tree",
+                category: "trees",
+                icon: "🌲",
+                gradient: "from-teal-800 to-forest-900",
+                latin: "Pinus",
+                uz: {
+                    name: "Qarag'ay (Doimiy yashil)",
+                    lifespan: "200 – 600 yil",
+                    light: "To'liq quyosh",
+                    water: "Kam (chuqur ildizli)",
+                    temp: "-40°C ... +35°C",
+                    care: "Har qanday tuproqda (hatto qumloq va toshloq yerlarda ham) o'sa oladi. Sovuqqa va qurg'oqchilikka o'ta chidamli. Faqat ekilgan dastlabki 2 yilda muntazam sug'orish kifoya.",
+                    benefits: "Qarag'ayzor havosi fitonsidlar bilan to'yingan bo'lib, o'pka va nafas yo'llari kasalliklarini davolaydi. Yosh kurtaklari va smolasi (qatron) shamollashga qarshi malham sifatida ishlatiladi.",
+                    fact: "Qarag'ay ignabarglari qishda ham to'kilmaydi (har 2-4 yilda asta-sekin yangilanadi) va yil davomida havoni kislorod bilan boyitib turadi."
+                },
+                ru: {
+                    name: "Сосна обыкновенная",
+                    lifespan: "200 – 600 лет",
+                    light: "Полное солнце",
+                    water: "Редкий (глубокие корни)",
+                    temp: "-40°C ... +35°C",
+                    care: "Неприхотлива, способна расти даже на бедных песчаных и каменистых почвах. Чрезвычайно морозо- и засухоустойчива. Полив необходим только в первые 2 года после посадки.",
+                    benefits: "Хвойный воздух насыщен фитонцидами, которые очищают легкие и губительны для болезнетворных бактерий. Почки и хвоя сосны богаты витамином С и эфирными маслами.",
+                    fact: "Сосна оставляет хвою на зиму, обновляя ее постепенно раз в 2–4 года, благодаря чему очищает воздух круглый год."
+                },
+                en: {
+                    name: "Scots Pine Tree",
+                    lifespan: "200 – 600 years",
+                    light: "Full Sun",
+                    water: "Low (deep taproot)",
+                    temp: "-40°C ... +35°C",
+                    care: "Highly adaptable evergreen that grows in sandy, rocky, or poor soils. Extremely cold-hardy and drought-tolerant once established; water regularly only during its first two years.",
+                    benefits: "Pine forests release healing phytoncides that cleanse the respiratory system and reduce stress. Pine needles are rich in Vitamin C, and pine resin has natural antiseptic uses.",
+                    fact: "Unlike deciduous trees, pines keep their needles through winter, shedding and replacing them gradually every 2 to 4 years."
+                }
+            }
+        ];
+
+        // ==========================================
+        // 3. DASTUR HOLATI VA SAQLASH (STATE)
+        // ==========================================
+        let currentLang = localStorage.getItem('florapedia_lang') || 'uz';
+        let activeCategory = 'all';
+        let showOnlyFavorites = false;
+        let favorites = JSON.parse(localStorage.getItem('florapedia_favs') || '[]');
+        let currentModalPlantId = null;
+
+        // ==========================================
+        // 4. TILNI O'ZGARTIRISH VA INTERFEYSNI YANGILASH
+        // ==========================================
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('florapedia_lang', lang);
+
+            // Til tugmalari dizaynini yangilash
+            ['uz', 'ru', 'en'].forEach(l => {
+                const btn = document.getElementById(`lang-${l}`);
+                if (l === lang) {
+                    btn.className = "px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-forest-900 shadow-sm";
+                } else {
+                    btn.className = "px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition text-sage-200 hover:text-white";
+                }
+            });
+
+            const t = uiTranslations[lang];
+            document.documentElement.lang = lang;
+            document.getElementById('ui-subtitle').textContent = t.subtitle;
+            document.getElementById('ui-favorites-btn').textContent = t.favoritesBtn;
+            document.getElementById('ui-badge').textContent = t.badge;
+            document.getElementById('ui-hero-title').textContent = t.heroTitle;
+            document.getElementById('ui-hero-desc').textContent = t.heroDesc;
+            document.getElementById('search-input').placeholder = t.searchPlaceholder;
+            document.getElementById('ui-showing-text').textContent = t.showingText;
+            document.getElementById('ui-empty-title').textContent = t.emptyTitle;
+            document.getElementById('ui-empty-desc').textContent = t.emptyDesc;
+            document.getElementById('ui-reset-btn').textContent = t.resetBtn;
+            document.getElementById('ui-footer-text').textContent = t.footerText;
+
+            // Modal yorliqlarini yangilash
+            document.getElementById('lbl-lifespan').textContent = t.lifespanLabel;
+            document.getElementById('lbl-light').textContent = t.lightLabel;
+            document.getElementById('lbl-water').textContent = t.waterLabel;
+            document.getElementById('lbl-temp').textContent = t.tempLabel;
+            document.getElementById('lbl-care-guide').textContent = t.careGuideLabel;
+            document.getElementById('lbl-benefits').textContent = t.benefitsLabel;
+            document.getElementById('lbl-fact').textContent = t.factLabel;
+
+            renderCategoryTabs();
+            renderPlants();
+
+            // Agar modal ochiq bo'lsa, uni ham yangi tilda yangilash
+            if (currentModalPlantId && !document.getElementById('plant-modal').classList.contains('hidden')) {
+                openModal(currentModalPlantId);
+            }
+        }
+
+        // ==========================================
+        // 5. KATEGORIYALAR VA KARTALARI CHIZISH
+        // ==========================================
+        function renderCategoryTabs() {
+            const container = document.getElementById('category-tabs');
+            const cats = uiTranslations[currentLang].categories;
+            container.innerHTML = '';
+
+            Object.keys(cats).forEach(key => {
+                const isActive = activeCategory === key && !showOnlyFavorites;
+                const btn = document.createElement('button');
+                btn.textContent = cats[key];
+                btn.onclick = () => {
+                    activeCategory = key;
+                    showOnlyFavorites = false;
+                    updateFavHeaderUI();
+                    renderCategoryTabs();
+                    renderPlants();
+                };
+                btn.className = isActive
+                    ? "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-forest-800 text-white shadow-sm transition"
+                    : "px-4 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white text-slate-600 hover:bg-sage-100 border border-sage-200/80 transition";
+                container.appendChild(btn);
+            });
+        }
+
+        function renderPlants() {
+            const grid = document.getElementById('plants-grid');
+            const emptyState = document.getElementById('empty-state');
+            const searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+            const t = uiTranslations[currentLang];
+
+            // Qidiruv tozalash tugmasini ko'rsatish/yashirish
+            const clearBtn = document.getElementById('clear-search');
+            if (searchQuery.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+
+            const filtered = plantsDatabase.filter(plant => {
+                const pData = plant[currentLang];
+                const matchesCat = activeCategory === 'all' || plant.category === activeCategory;
+                const matchesFav = !showOnlyFavorites || favorites.includes(plant.id);
+                const matchesSearch = 
+                    pData.name.toLowerCase().includes(searchQuery) ||
+                    plant.latin.toLowerCase().includes(searchQuery) ||
+                    pData.benefits.toLowerCase().includes(searchQuery) ||
+                    pData.care.toLowerCase().includes(searchQuery);
+
+                return matchesCat && matchesFav && matchesSearch;
+            });
+
+            document.getElementById('results-count').textContent = filtered.length;
+            grid.innerHTML = '';
+
+            if (filtered.length === 0) {
+                grid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                grid.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.forEach(plant => {
+                const pData = plant[currentLang];
+                const isFav = favorites.includes(plant.id);
+                const catName = t.categories[plant.category];
+
+                const card = document.createElement('article');
+                card.className = "bg-white rounded-3xl border border-sage-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden group cursor-pointer";
+                card.onclick = (e) => {
+                    // Agar yurakcha tugmasi bosilgan bo'lsa modal ochilmasin
+                    if (e.target.closest('.fav-btn')) return;
+                    openModal(plant.id);
+                };
+
+                card.innerHTML = `
+                    <!-- Kartochka yuqori qismi (Botanik gradient + Emoji/Ikonka) -->
+                    <div class="relative h-40 bg-gradient-to-br ${plant.gradient} p-5 flex flex-col justify-between text-white overflow-hidden">
+                        <!-- Dekorativ fon doirasi -->
+                        <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+                        
+                        <div class="flex justify-between items-start z-10">
+                            <span class="px-3 py-1 rounded-full bg-black/25 backdrop-blur-sm text-[11px] font-semibold tracking-wide">
+                                ${catName}
+                            </span>
+                            <button onclick="toggleFavorite('${plant.id}')" class="fav-btn w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 backdrop-blur-sm flex items-center justify-center transition" title="${t.saveBtn}">
+                                <i class="${isFav ? 'fa-solid text-rose-400' : 'fa-regular text-white'} fa-heart text-base"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center space-x-3.5 z-10">
+                            <div class="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-3xl shadow-md group-hover:scale-110 transition-transform duration-300">
+                                ${plant.icon}
+                            </div>
+                            <div>
+                                <h3 class="font-serif font-bold text-xl leading-snug text-white group-hover:text-emerald-200 transition">${pData.name}</h3>
+                                <p class="text-xs italic text-white/75">${plant.latin}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kartochka tana qismi -->
+                    <div class="p-5 flex-grow flex flex-col justify-between space-y-4">
+                        <div class="space-y-3">
+                            <!-- Umr ko'rishi va Sug'orish badge -->
+                            <div class="flex flex-wrap gap-2">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sage-50 border border-sage-200 text-xs font-semibold text-forest-800">
+                                    <i class="fa-solid fa-hourglass-half text-emerald-600"></i>
+                                    ${pData.lifespan}
+                                </span>
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200/70 text-xs font-medium text-sky-900">
+                                    <i class="fa-solid fa-droplet text-sky-500"></i>
+                                    ${pData.water.split('(')[0].trim()}
+                                </span>
+                            </div>
+
+                            <!-- Foydasi haqida qisqacha -->
+                            <p class="text-sm text-slate-600 line-clamp-3 leading-relaxed">
+                                ${pData.benefits}
+                            </p>
+                        </div>
+
+                        <!-- Pastki tugma -->
+                        <div class="pt-3 border-t border-sage-100 flex items-center justify-between text-xs font-bold text-forest-800 group-hover:text-emerald-700">
+                            <span>${t.readMore}</span>
+                            <span class="w-7 h-7 rounded-full bg-sage-100 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center transition">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ==========================================
+        // 6. BATAFSIL MODAL OYNA FUNKSIYALARI
+        // ==========================================
+        function openModal(plantId) {
+            const plant = plantsDatabase.find(p => p.id === plantId);
+            if (!plant) return;
+
+            currentModalPlantId = plantId;
+            const pData = plant[currentLang];
+            const t = uiTranslations[currentLang];
+
+            const banner = document.getElementById('modal-banner');
+            banner.className = `relative p-6 sm:p-8 text-white flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 bg-gradient-to-r ${plant.gradient}`;
+
+            document.getElementById('modal-icon-box').textContent = plant.icon;
+            document.getElementById('modal-category').textContent = t.categories[plant.category];
+            document.getElementById('modal-name').textContent = pData.name;
+            document.getElementById('modal-latin').textContent = plant.latin;
+
+            document.getElementById('modal-lifespan').textContent = pData.lifespan;
+            document.getElementById('modal-light').textContent = pData.light;
+            document.getElementById('modal-water').textContent = pData.water;
+            document.getElementById('modal-temp').textContent = pData.temp;
+
+            document.getElementById('modal-care').textContent = pData.care;
+            document.getElementById('modal-benefits').textContent = pData.benefits;
+            document.getElementById('modal-fact').textContent = pData.fact;
+
+            updateModalFavButton();
+
+            document.getElementById('plant-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('plant-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+            currentModalPlantId = null;
+        }
+
+        // Modal tashqarisiga bosilganda yopish
+        document.getElementById('plant-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // Escape tugmasi bosilganda yopish
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !document.getElementById('plant-modal').classList.contains('hidden')) {
+                closeModal();
+            }
+        });
+
+        // ==========================================
+        // 7. SEVIMLILAR (FAVORITES) TIZIMI
+        // ==========================================
+        function toggleFavorite(plantId) {
+            if (favorites.includes(plantId)) {
+                favorites = favorites.filter(id => id !== plantId);
+            } else {
+                favorites.push(plantId);
+            }
+            localStorage.setItem('florapedia_favs', JSON.stringify(favorites));
+            updateFavCount();
+            renderPlants();
+            if (currentModalPlantId === plantId) {
+                updateModalFavButton();
+            }
+        }
+
+        function toggleFavoriteFromModal() {
+            if (currentModalPlantId) {
+                toggleFavorite(currentModalPlantId);
+            }
+        }
+
+        function updateModalFavButton() {
+            const isFav = favorites.includes(currentModalPlantId);
+            const t = uiTranslations[currentLang];
+            const icon = document.getElementById('modal-fav-icon');
+            const text = document.getElementById('modal-fav-text');
+
+            if (isFav) {
+                icon.className = "fa-solid fa-heart text-rose-400";
+                text.textContent = t.savedBtn;
+            } else {
+                icon.className = "fa-regular fa-heart text-white";
+                text.textContent = t.saveBtn;
+            }
+        }
+
+        function updateFavCount() {
+            document.getElementById('fav-count').textContent = favorites.length;
+        }
+
+        function toggleFavoritesFilter() {
+            showOnlyFavorites = !showOnlyFavorites;
+            updateFavHeaderUI();
+            renderCategoryTabs();
+            renderPlants();
+        }
+
+        function updateFavHeaderUI() {
+            const btn = document.getElementById('btn-favorites');
+            const icon = document.getElementById('fav-header-icon');
+            if (showOnlyFavorites) {
+                btn.className = "flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-rose-600 text-white border border-rose-500 text-sm font-semibold transition shadow-md";
+                icon.className = "fa-solid fa-heart text-white";
+            } else {
+                btn.className = "flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-forest-800 hover:bg-emerald-900/60 border border-emerald-700/40 text-sm font-medium transition";
+                icon.className = "fa-regular fa-heart text-rose-400";
+            }
+        }
+
+        // ==========================================
+        // 8. QIDIRUV VA FILTRNI TOZALASH
+        // ==========================================
+        document.getElementById('search-input').addEventListener('input', renderPlants);
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            renderPlants();
+        }
+
+        function resetFilters() {
+            activeCategory = 'all';
+            showOnlyFavorites = false;
+            document.getElementById('search-input').value = '';
+            updateFavHeaderUI();
+            renderCategoryTabs();
+            renderPlants();
+        }
+
+        // ==========================================
+        // 9. DASTURNI ISHGA TUSHIRISH
+        // ==========================================
+        window.onload = function() {
+            updateFavCount();
+            changeLanguage(currentLang);
+        };
+    </script>
+</body>
+</html>
